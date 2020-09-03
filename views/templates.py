@@ -40,3 +40,10 @@ def login():
         return render_template('login.html', menu=menu)
     else:
         return render_template('login.html', menu='')
+
+
+@bp.route("/test")
+def test():
+    menu_list = db("SELECT * FROM menu ORDER BY MENU_SN")
+    isLogin = loginCheck(session)
+    return render_template('common/header2.html', menu='', menuList=menu_list, isLogin=isLogin)

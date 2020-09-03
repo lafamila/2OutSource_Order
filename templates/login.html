@@ -1,42 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <title>로그인</title>
-    <script src="https://code.jquery.com/jquery-3.5.0.js" integrity="sha256-r/AaFHrszJtwpe+tHyNi/XCfMxYpbsRg2Uqn0x3s2zc=" crossorigin="anonymous"></script>
-    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='lib/main.css')}}">
-    <script type="text/javascript" src="{{url_for('static', filename='lib/main.js')}}"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    {% for m in menuList %}
+        {% if m['menu_name'] == menu %}
+            <title>{{m['menu_label']}}</title>
+        {% endif %}
+    {% endfor %}
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/bootstrap/css/bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/Navigation-with-Button.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/styles.css')}}">
 </head>
+
 <body>
-    <div>
-        <input type="text" name="u_id" id="u_id"/>
-        <input type="password" name="u_pw" id="u_pw"/>
-        <input type="text" name="u_nm" id="u_nm" style="display:none;"/>
-        <div id="login_section">
-            <input type="button" id="login" value="로그인"/>
-            <input type="button" id="show" value="가입하기"/>
+    <nav class="navbar navbar-light navbar-expand-md navigation-clean-button">
+        <div class="container"><a class="navbar-brand" href="/">Company Name</a><button data-toggle="collapse" class="navbar-toggler" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse"
+                id="navcol-1">
+                <ul class="nav navbar-nav mr-auto">
+
+
+                </ul>
+
+            </div>
         </div>
-        <div id="join_section" style="display:none;">
-            <input type="button" id="join" value="가입"/>
-            <input type="button" id="hide" value="로그인하기"/>
-        </div>
-    </div>
+    </nav>
 
     <div>
-        <a href="/">홈으로</a>
+        <div class="container">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Modal Title</h4></div>
+            <div class="modal-body">
 
+                <form method="post">
+                    <h2 class="sr-only">Login Form</h2>
+                    <div class="illustration"><i class="icon ion-ios-navigate"></i></div>
+                    <div class="form-group"><input class="form-control" type="text" name="u_id" id="u_id" placeholder="ID" /></div>
+                    <div class="form-group"><input class="form-control" type="password" name="u_pw" id="u_pw" placeholder="Password" /></div>
+                    <div class="form-group" id="u_name_Toggle" style="display:none;"><input class="form-control" type="text" name="u_nm" id="u_nm" placeholder="Name" /></div>
+                    <div class="form-group" id="login_section"><button class="btn btn-primary btn-block" type="submit" id="login">로그인</button></div>
+                    <div class="form-group" id="join_section" style="display:none;"><button class="btn btn-primary btn-block" type="submit" id="join">가입하기</button></div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" type="button" id="show">회원가입</button>
+                <button class="btn btn-primary" type="button" id="hide" style="display:none;">뒤로</button>
+            </div>
+        </div>
+        </div>
     </div>
+    <script src="{{url_for('static', filename='assets/js/jquery.min.js')}}"></script>
+    <script src="{{url_for('static', filename='assets/bootstrap/js/bootstrap.min.js')}}"></script>
     <script>
         $('#show').on('click', function(){
             $("#join_section").show();
-            $("#u_nm").show();
+            $("#u_name_Toggle").show();
             $("#login_section").hide();
+            $("#show").hide();
+            $("#hide").show();
         });
         $('#hide').on('click', function(){
             $("#join_section").hide();
-            $("#u_nm").hide();
+            $("#u_name_Toggle").hide();
             $("#login_section").show();
+            $("#show").show();
+            $("#hide").hide();
         });
+
+        $("#loginToggle").on("click", function(){
+            $("#loginModal").modal("show");
+        });
+
         $('#login').on('click', function(){
             var u_id = $("#u_id").val();
             var u_pw = $("#u_pw").val();
@@ -54,6 +92,22 @@
                 }
             });
 
+        });
+
+        $("#logout").on("click", function(){
+            $.ajax({
+                url: '/ajax/logout',
+                method: 'POST'
+            }).done(function(data){
+                if(data.result == 1){
+                    setTimeout(function(){
+                        location.reload();
+                    },500);
+                }
+                else{
+                    alert("오류가 발생했습니다");
+                }
+            });
         });
         $('#join').on('click', function(){
             var u_id = $("#u_id").val();
@@ -75,13 +129,7 @@
             });
 
         });
-
-        $(document).ready(function(){
-            {% if menu != '' %}
-                alert("로그인이 필요합니다");
-            {% endif %}
-        });
-
     </script>
+</body>
 
-{% include "common/footer.html" %}
+</html>
