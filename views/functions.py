@@ -470,3 +470,56 @@ def insertArticle():
     db("INSERT INTO article(U_SN, A_TYPE, O_SN, A_TITLE, A_CONTENT, A_CNNC, REGIST_DTM) VALUES (%s, %s, %s, %s, %s, %s, %s)", (u_sn, a_type, o_sn, a_title, a_content, a_cnnc, now))
     return '<script>alert("입력되었습니다.");window.opener.reload(0); close();</script>'
 
+
+
+@fp.route('/getAlerts')
+def getAlerts():
+
+    where = ""
+    where += " AND s.O_STTUS IN (0)"
+    query = "SELECT o.*, u.U_NM, u.U_ID, u.U_CP, b.BRND_SN, b.BRND_NM, s.O_STTUS, (SELECT CODE_LABEL FROM code WHERE CODE_NM='O_STTUS' AND CODE=s.O_STTUS) AS STTUS, s.REGIST_DTM AS STTUS_DATE FROM ordered o LEFT JOIN brand b ON o.brnd_sn=b.brnd_sn LEFT JOIN user u ON o.U_SN=u.U_SN LEFT JOIN (SELECT * FROM status WHERE S_SN IN (SELECT MAX(S_SN) FROM status GROUP BY O_SN)) s ON o.O_SN=s.O_SN WHERE 1=1 {} ORDER BY o.REGIST_DTM".format(where)
+    ordered = db(query+" LIMIT 3 OFFSET 0")
+    orderedCount = len(db(query))
+
+    where = ""
+    query = ""
+    money = []
+    moneyCount = 0
+
+    where = ""
+    where += " AND a.A_TYPE > 0 AND c.A_SN IS NULL "
+    query = "SELECT a.*, u.U_ID, c.A_SN AS CNNC, (SELECT CODE_LABEL FROM code WHERE CODE_NM='A_TYPE' AND CODE=a.A_TYPE) AS TYPE FROM article a LEFT JOIN user u ON a.U_SN=u.U_SN LEFT OUTER JOIN article c ON c.A_CNNC=a.A_SN WHERE 1=1 {} ORDER BY a.REGIST_DTM".format(where)
+    article = db(query+" LIMIT 3 OFFSET 0")
+    articleCount = len(db(query))
+
+    return jsonify({"ordered" : ordered, "orderedCount" : orderedCount, "money" : money, "moneyCount": moneyCount, "article" : article, "articleCount" : articleCount})
+
+@fp.route('/insertDetail', methods=['POST'])
+def insertDetail():
+    data = request.form.get('data')
+    now = getToday()
+    db("INSERT INTO main(M_TYPE, M_TEXT, REGIST_DTM) VALUES(2, %s, %s)", (data, now))
+    return jsonify({"result" : 1})
+
+@fp.route('/getDetail')
+def getDetail():
+    detail = db("SELECT * FROM main WHERE M_TYPE=2 ORDER BY REGIST_DTM DESC LIMIT 1 OFFSET 0")
+    if len(detail) > 0:
+        return jsonify({"data" : detail})
+    else:
+        return jsonify({"data" : []})
+
+@fp.route('/insertMain', methods=['POST'])
+def insertMain():
+    data = request.form.get('data')
+    now = getToday()
+    db("INSERT INTO main(M_TYPE, M_TEXT, REGIST_DTM) VALUES(1, %s, %s)", (data, now))
+    return jsonify({"result" : 1})
+
+@fp.route('/getMain')
+def getMain():
+    detail = db("SELECT * FROM main WHERE M_TYPE=1 ORDER BY REGIST_DTM DESC LIMIT 1 OFFSET 0")
+    if len(detail) > 0:
+        return jsonify({"data" : detail})
+    else:
+        return jsonify({"data" : []})

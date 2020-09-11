@@ -6,53 +6,142 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-6 col-xl-4 mb-4">
+                <a href="/admin/order">
                 <div class="card shadow border-left-primary py-2">
                     <div class="card-body">
                         <div class="row align-items-center no-gutters">
                             <div class="col mr-2">
                                 <div class="text-uppercase text-primary font-weight-bold text-xs mb-1"><span>주문</span></div>
-                                <div class="text-dark font-weight-bold h5 mb-0"><span>(1건)</span></div>
+                                <div class="text-dark font-weight-bold h5 mb-0">(<span id="order-table-count">1</span>건)</div>
                             </div>
                             <div class="col-auto"><i class="fas fa-calendar fa-2x text-gray-300"></i></div>
                         </div>
                     </div>
                 </div>
+                </a>
             </div>
             <div class="col-md-6 col-xl-4 mb-4">
+                <a href="#">
                 <div class="card shadow border-left-success py-2">
                     <div class="card-body">
                         <div class="row align-items-center no-gutters">
                             <div class="col mr-2">
                                 <div class="text-uppercase text-success font-weight-bold text-xs mb-1"><span>결제</span></div>
-                                <div class="text-dark font-weight-bold h5 mb-0"><span>(2건)</span></div>
+                                <div class="text-dark font-weight-bold h5 mb-0">(<span id="money-table-count">0</span>건)</div>
                             </div>
                             <div class="col-auto"><i class="fas fa-dollar-sign fa-2x text-gray-300"></i></div>
                         </div>
                     </div>
                 </div>
+                </a>
             </div>
             <div class="col-md-6 col-xl-4 mb-4">
+                <a href="/admin/ask">
                 <div class="card shadow border-left-info py-2">
                     <div class="card-body">
                         <div class="row align-items-center no-gutters">
                             <div class="col mr-2">
                                 <div class="text-uppercase text-info font-weight-bold text-xs mb-1"><span>문의글</span></div>
-                                <div class="text-dark font-weight-bold h5 mb-0 mr-3"><span>3건</span></div>
+                                <div class="text-dark font-weight-bold h5 mb-0 mr-3">(<span id="article-table-count">0</span>건)</div>
                             </div>
                             <div class="col-auto"><i class="fas fa-clipboard-list fa-2x text-gray-300"></i></div>
                         </div>
                     </div>
                 </div>
+                </a>
             </div>
             <div class="clearfix"></div>
         </div>
         <div class="row">
-            <div class="col">
-                <p>기존 공지사항이 작성되어있는 공간입니다.</p>
+            <div class="col" id="main-col">
+                <textarea style="width:100%;height:180px;" id="main" disabled></textarea>
             </div>
+            <input type="button" class="btn btn-primary" value="저장" id="main-submit"/>
         </div>
         <div class="row">
-            <div class="col"></div>
+            <div class="col" id="detail-col">
+                <textarea style="width:100%;height:400px;" id="detail" disabled></textarea>
+            </div>
+            <input type="button" class="btn btn-primary" value="저장" id="detail-submit"/>
         </div>
     </div>
+    <script>
+        $.ajax({
+            url : '/ajax/getAlerts',
+            method : 'get'
+        }).done(function(result){
+            $("#article-table-count").html(result.articleCount);
+            $("#money-table-count").html(result.moneyCount);
+            $("#order-table-count").html(result.orderedCount);
+        });
+
+        $.ajax({
+            url : '/ajax/getDetail',
+            method : 'get'
+        }).done(function(result){
+            if(result.data.length > 0){
+                var pValue = result.data[0];
+                $("#detail").val(pValue.m_text);
+            }
+            else{
+                $("#detail").val("");
+            }
+        });
+        $("#detail-submit").on("click", function(){
+            var data = $("#detail").val();
+            var params = {"data" : data};
+            $.ajax({
+                url : '/ajax/insertDetail',
+                method : 'post',
+                data : params
+            }).done(function(data){
+                if(data.result == 1){
+                    alert("저장되었습니다.");
+                    $("#detail").prop("disabled", true);
+                }
+            });
+        });
+        $("#detail-col").on("dblclick", function(){
+            console.log($("#detail").is(":disabled"));
+            if($("#detail").is(":disabled")){
+                $("#detail").prop("disabled", false);
+            }
+        });
+
+
+
+        $.ajax({
+            url : '/ajax/getMain',
+            method : 'get'
+        }).done(function(result){
+            if(result.data.length > 0){
+                var pValue = result.data[0];
+                $("#main").val(pValue.m_text);
+            }
+            else{
+                $("#main").val("");
+            }
+        });
+        $("#main-submit").on("click", function(){
+            var data = $("#main").val();
+            var params = {"data" : data};
+            $.ajax({
+                url : '/ajax/insertMain',
+                method : 'post',
+                data : params
+            }).done(function(data){
+                if(data.result == 1){
+                    alert("저장되었습니다.");
+                    $("#main").prop("disabled", true);
+                }
+            });
+        });
+        $("#main-col").on("dblclick", function(){
+            if($("#main").is(":disabled")){
+                $("#main").prop("disabled", false);
+            }
+        });
+
+
+    </script>
 {% include "admin/common/footer.html" %}

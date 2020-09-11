@@ -5,13 +5,53 @@
 {% endwith %}
 <div class="container">
 
-<div class="row">
-    <div class="col-md-12"></div>
+<div class="row" style="height:200px;">
+    <div class="col-md-12">
+        <h1 style="color:black;">공지사항</h1>
+        <ol id="main">
+        </ol>
+    </div>
 </div>
-<div class="row">
-    <div class="col-md-12"></div>
+<div class="row" style="height:500px;">
+    <div class="col-md-12" id="detail"></div>
 </div>
 </div>
 
+<script>
+    $.ajax({
+        url : '/ajax/getDetail',
+        method : 'get'
+    }).done(function(result){
+        if(result.data.length > 0){
+            var pValue = result.data[0];
+            $("#detail").html(pValue.m_text);
+        }
+        else{
+            $("#detail").html("");
+        }
+    });
+
+    $.ajax({
+        url : '/ajax/getMain',
+        method : 'get'
+    }).done(function(result){
+        if(result.data.length > 0){
+            var pValue = result.data[0];
+            var mains = pValue.m_text.split("\n");
+            var html = '';
+            $.each(mains, function(pIndex, pValue){
+                if(pIndex >= 5)
+                    return false;
+                html += '<li>'+pValue+'</li>';
+
+            });
+            $("#main").html(html);
+        }
+        else{
+            $("#main").html("");
+        }
+    });
+
+</script>
 
 {% include "common/footer.html" %}
