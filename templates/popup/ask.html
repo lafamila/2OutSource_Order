@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ask</title>
+    <script src="{{url_for('static', filename='assets/js/jquery.min.js')}}"></script>
+    <script src="{{url_for('static', filename='assets/bootstrap/js/bootstrap.min.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
+</head>
+<body>
+    <form action="/ajax/insertArticle" method="post">
+        <input type="hidden" name="a_sn" id="a_sn"/>
+        <div>
+            <select name="a_type" id="a_type" style="width:40%;">
+                {% for option in options %}
+                <option value="{{option['value']}}">{{option['label']}}</option>
+                {% endfor %}
+            </select>
+            <select name="o_sn" id="o_sn" style="width:40%;display:none;">
+                <option value="" disabled selected>주문번호를 선택해주세요.</option>
+                {% for order in ordered %}
+                <option value="{{order['o_sn']}}">{{order['o_sn']}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <input type="text" name="a_title" placeholder="제목" style="width:90%;"/>
+        </div>
+        <div>
+            <textarea name="a_content" placeholder="내용" style="width:90%;"></textarea>
+        </div>
+        <input type="submit" id="submit" value="등록"/>
+
+    </form>
+    <script>
+        $("#a_type").on("change", function(){
+            var data = $(this).val();
+            if(data == 4){
+                $("#o_sn").show();
+            }
+            else{
+                $("#o_sn").hide();
+            }
+        });
+        var url = new URL(window.location.href );
+        var o_sn = url.searchParams.get("o_sn");
+        var a_sn = url.searchParams.get("a_sn");
+        if(o_sn){
+            $("#a_type").val(4);
+            $("#a_type").trigger("change");
+            $("#o_sn").val(o_sn);
+        }
+        if(a_sn){
+            $("#a_type").val(0);
+            $("#a_sn").val(a_sn);
+        }
+    </script>
+</body>
+</html>

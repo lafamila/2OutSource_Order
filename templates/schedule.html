@@ -1,0 +1,53 @@
+{% with menuList = menuList %}
+{% with menu = menu %}
+{% include "common/header.html" %}
+{% endwith %}
+{% endwith %}
+<style>
+    .btn{
+        margin-right:2px!important;
+    }
+
+</style>
+<div class="container">
+    <div id="dataTable">
+
+    </div>
+</div>
+<script>
+$.ajax({
+    url : '/ajax/getSchedule',
+    method : 'post'
+}).done(function(result){
+    var html = '';
+
+    $.each(result, function(day, data){
+        html += '    <div class="col-md-12 col-xl-12">';
+        html += '        <div class="card">';
+        html += '            <div class="card-body">';
+        html += '                <h4 class="card-title">'+getDay(day)+'</h4>';
+        html += '                <div class="row">';
+        $.each(data, function(pIndex, pValue){
+            if(pIndex % 12 == 0 && pIndex > 0){
+                html += '                </div>';
+                html += '                <div class="row">';
+            }
+
+            html += '                    <div class="btn btn-primary col-xs-6 col-sm-4 col-xl-2 brand" data-sn="'+pValue.brnd_sn+'">'+pValue.name+'</div>';
+
+        });
+        html += '                </div>';
+        html += '            </div>';
+        html += '        </div>';
+        html += '    </div>';
+    });
+    $("#dataTable").html(html);
+});
+
+$(document).on("click", ".brand", function(){
+    var sn = $(this).data("sn");
+    location.href = "/upload?brand="+sn;
+});
+</script>
+
+{% include "common/footer.html" %}

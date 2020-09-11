@@ -12,7 +12,7 @@ db = DB(host='localhost', user='root', password='P@ssw0rd', db='order')
 @bp.route("/")
 @bp.route("/<menu_name>")
 def render(menu_name=''):
-    menu_list = db("SELECT * FROM menu ORDER BY MENU_SN")
+    menu_list = db("SELECT * FROM menu ORDER BY MENU_ORDR")
     isLogin = loginCheck(session)
     if menu_name == '':
         return render_template('index.html', menu='', menuList=menu_list, isLogin=isLogin)
@@ -24,11 +24,47 @@ def render(menu_name=''):
 
     if isMenu:
         if isLogin:
-            return render_template('{}.html'.format(menu_name), menu=menu_name, menuList=menu_list, isLogin=isLogin)
+            u_sn = session["u_sn"]
+            user = db("SELECT U_ID FROM user WHERE U_SN=%s", (u_sn))
+            return render_template('{}.html'.format(menu_name), menu=menu_name, menuList=menu_list, isLogin=isLogin, u_id=user[0]["u_id"])
         else:
             return redirect('/login?menu={}'.format(menu_name))
     else:
         abort(404)
+
+@bp.route("/popup/foreign")
+def foreign():
+    isLogin = loginCheck(session)
+    if not isLogin:
+        return redirect('/login')
+    else:
+        return render_template("popup/foreign.html")
+
+@bp.route("/popup/ask")
+def ask():
+    isLogin = loginCheck(session)
+    if not isLogin:
+        return redirect('/login')
+    else:
+        u_sn = session["u_sn"]
+        options = db("SELECT CODE_LABEL AS LABEL, CODE AS VALUE FROM code WHERE CODE_NM='A_TYPE' ORDER BY CODE")
+        ordered = db("SELECT O_SN FROM ordered WHERE U_SN=%s", u_sn)
+        return render_template("popup/ask.html", options=options, ordered=ordered)
+
+
+@bp.route("/popup/showAsk")
+def showAsk():
+    isLogin = loginCheck(session)
+    if not isLogin:
+        return redirect('/login')
+    else:
+        u_sn = session["u_sn"]
+        a_sn = request.args.get('a_sn')
+        options = db("SELECT CODE_LABEL AS LABEL, CODE AS VALUE FROM code WHERE CODE_NM='A_TYPE' ORDER BY CODE")
+        ordered = db("SELECT O_SN FROM ordered WHERE U_SN=%s", u_sn)
+        return render_template("popup/show.html", options=options, ordered=ordered)
+
+
 
 @bp.route("/login")
 def login():

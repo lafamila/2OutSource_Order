@@ -1,0 +1,74 @@
+    </div>
+    <footer class="bg-white sticky-footer">
+        <div class="container my-auto">
+            <div class="text-center my-auto copyright"><span>Copyright © Brand 2020</span></div>
+        </div>
+    </footer>
+    </div>
+    </div>
+    <script>
+        $(document).on("click", "#dataTable button.delete", function(){
+            var sn = $(this).data('sn');
+            var table = $(this).data('table');
+            var col = $(this).data('col');
+            var params = {"table" : table, "col" : col, "sn" : sn};
+            if(confirm("삭제하시겠습니까?")){
+                $.ajax({
+                    url : '/ajax/delete',
+                    method : 'post',
+                    data : params
+                }).done(function(result){
+                    alert(result.msg);
+                    reload(0);
+                });
+            }
+        });
+        $(document).on("dblclick", "#dataTable span.change", function(){
+            var text = $(this).html();
+            var isNumber = $(this).hasClass('number');
+            var isHTML = $(this).hasClass('html');
+            if(isNumber){
+                text = text.replace(/,/gi, "");
+            }
+            if(isHTML){
+                text = '';
+            }
+            var data = prompt("수정할 값을 입력해주세요", text);
+            if(isNumber){
+                data = data.replace(/,/gi, "");
+            }
+            $(this).html(data);
+            $(this).trigger("change");
+        });
+
+        $(document).on("change", "#dataTable .change", function(){
+            var tagName = $(this).prop('tagName').toUpperCase();
+            var data = '';
+            if(tagName == "SELECT"){
+                data = $(this).val();
+            }
+            else if(tagName == "INPUT" && $(this).prop('type').toUpperCase() == "CHECKBOX"){
+                data = $(this).is(":checked") ? 1 : 0;
+            }
+            else{
+                data = $(this).html();
+            }
+            var sn = $(this).data('sn');
+            var table = $(this).data('table');
+            var col = $(this).data('col');
+            var stand = $(this).data('stand');
+            var params = {"table" : table, "col" : col, "data" : data, "sn" : sn, "stand" : stand};
+            $.ajax({
+                url : '/ajax/update',
+                method : 'post',
+                data : params
+            }).done(function(result){
+                alert(result.msg);
+            });
+        });
+
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,215 @@
+{% with menuList = menuList %}
+{% with menu = menu %}
+{% include "admin/common/header.html" %}
+{% endwith %}
+{% endwith %}
+    <div class="container-fluid">
+        <h3 class="text-dark mb-4">브랜드관리</h3>
+        <div class="row">
+            <div class="col-xl-3 align-self-center" style="text-align: center;"><input type="text" placeholder="브랜드 이름을 입력하세요." style="width: 100%;" id="brand"></div>
+            <div class="col-xl-3 align-self-center" style="text-align: center;"><select style="text-align: center;width: 100%;" id="day"><option value="-1" selected="" disabled>요일을 선택하세요.</option><option value="1">월요일</option><option value="2">화요일</option><option value="3">수요일</option><option value="4">목요일</option><option value="5">금요일</option><option value="6">토요일</option><option value="0">일요일</option></select></div>
+            <div class="col-xl-2"><button class="btn btn-primary" type="button" id="goRegister">등록</button></div>
+        </div>
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">등록된 브랜드 목록</p>
+                <form id="ajaxFrom" method="post">
+                   <input type="file" id="ajaxFile" onChange="ajaxFileChange();" style="display:none;"/>
+                   <input type="hidden" id="ajaxSn" name="sn"/>
+                   <input type="hidden" id="ajaxType" name="type"/>
+                </form>
+
+            </div>
+            <div class="card-body">
+                <div class="table-responsive table mt-2" id="dataTable_div" role="grid" aria-describedby="dataTable_info">
+                    <table class="table my-0" id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>브랜드</th>
+                                <th>발주요일</th>
+                                <th>등록일</th>
+                                <th>발주서양식</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 align-self-center">
+                        <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">Showing <span id="start">0</span> to <span id="end">0</span> of <span id="recordsTotal">0</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
+                            <ul class="pagination" id="pagination">
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var table;
+        reload = function(currentPage){
+
+            $.ajax({
+                url : '/ajax/getBrands',
+                method : 'get',
+                data : {"page" : currentPage}
+            }).done(function(result){
+                if(table){
+                    table.destroy();
+                }
+                table = $('#dataTable').DataTable( {
+                    paging:  false,
+                    info:   false,
+                    searching: false,
+                    pageLength: 5,
+                    data: result.data,
+                    columns: [
+                        {   data: 'brnd_sn',
+                            className: 'text-center',
+                            render: function ( data, type, row, meta ) {
+
+                                return meta.settings._iDisplayStart + meta.row + 1;
+                            }
+                        },
+                        {   data: 'brnd_nm',
+                            className: 'text-left',
+                            render: function ( data, type, row ) {
+                                return '<span class="change" data-stand="brnd_sn" data-sn="'+row.brnd_sn+'" data-col="brnd_nm" data-table="brand">'+data+'</span>';
+                            }
+                        },
+                        {   data: 'brnd_day',
+                            className: 'text-left',
+                            render: function ( data, type, row ) {
+                                var html = '';
+                                html += '<select class="change" data-stand="brnd_sn" data-sn="'+row.brnd_sn+'" data-col="brnd_day" data-table="brand">';
+
+                                for(let i=0;i<7;i++){
+                                    if(i==data){
+                                        html += '<option value="'+i+'" selected>'+getDay(i)+'</option>';
+                                    }
+                                    else{
+                                        html += '<option value="'+i+'">'+getDay(i)+'</option>';
+                                    }
+                                }
+                                html += '</select>';
+                                return html;
+                            }
+                         },
+                        {   data: 'regist_dtm',
+                            className: 'text-left',
+                            render: function ( data, type, row ) {
+
+                                return data.substring(0, 10);
+                            }
+                         },
+                        {   data: 'brnd_sn',
+                            className: 'text-center',
+                            render: function ( data, type, row ) {
+                                var path = row.brnd_path;
+                                var vip = row.brnd_vip;
+                                console.log(path, vip);
+                                var _class1 = (path == null) ? " btn-secondary" : " btn-primary";
+                                var _class2 = (vip == null) ? " btn-secondary" : " btn-primary";
+                                return '<div class="btn-group" role="group"><button class="btn'+_class1+'" type="button" onClick="ajaxFileUpload('+data+',0);">일반</button><button class="btn'+_class2+'" type="button" onClick="ajaxFileUpload('+data+',1);">VIP</button></div>';
+                            }
+                        },
+                        {   data: 'brnd_sn',
+                            className: 'text-right',
+                            render: function ( data, type, row ) {
+                                return '<button class="btn btn-primary delete" type="button" data-sn="'+row.brnd_sn+'" data-col="brnd_sn" data-table="brand">삭제</button>';
+
+                            }
+                        }
+                    ]
+                } );
+
+                var totalPage = parseInt((result.recordsTotal-1)/10) + 1;
+                $("#start").html(currentPage*10);
+                $("#end").html(currentPage*10 + result.data.length);
+                $("#recordsTotal").html(result.recordsTotal);
+                var html = '';
+                var __class = (currentPage == 0) ? ' disabled' : '';
+                html += '<li class="page-item'+__class+'"><a class="page-link" aria-label="Previous" id="dataTable_previous" aria-controls="dataTable" href="javascript:reload('+(currentPage-1)+');"><span aria-hidden="true">«</span></a></li>';
+                for(let i=0;i < totalPage;i++){
+                    let _class = (i == currentPage) ? " active" : "";
+                    html += '<li class="page-item'+_class+'"><a class="page-link" aria-controls="dataTable"  href="javascript:reload('+i+');">'+(i+1)+'</a></li>';
+                }
+                var __class = (currentPage == (totalPage-1)) ? ' disabled' : '';
+                html += '<li class="page-item'+__class+'"><a class="page-link" aria-label="Next" id="dataTable_next" aria-controls="dataTable"  href="javascript:reload('+(currentPage+1)+');"><span aria-hidden="true">»</span></a></li>';
+
+
+                $("#pagination").html(html);
+            });
+
+        }
+
+
+        $("#goRegister").on("click", function(){
+            var brand = $("#brand").val();
+            var day = $("#day").val();
+            if(brand == "" || brand == null){
+                $("#brand").focus();
+                alert("브랜드를 입력해주세요");
+                return false;
+            }
+            if(day == -1 || day == "" || day == null){
+                $("#brand").focus();
+                alert("요일을 선택해주세요");
+                return false;
+            }
+            var params = {"brand" : brand, "day" : day};
+            $.ajax({
+                url : '/ajax/insertBrand',
+                method : 'post',
+                data : params
+            }).done(function(data){
+                if(data.result == 1){
+                    alert("입력되었습니다.");
+                    reload(0);
+                }
+                else{
+                    alert("문제가 발생했습니다.");
+                }
+            });
+        });
+        reload(0);
+    </script>
+    <script type="text/javascript">
+        function ajaxFileUpload(sn, type) {
+            $("#ajaxFile").click();
+            $("#ajaxSn").val(sn);
+            $("#ajaxType").val(type);
+        }
+
+        function ajaxFileChange() {
+            ajaxFileTransmit();
+        }
+
+        function ajaxFileTransmit() {
+            var form = $("ajaxFrom")[0];
+            var formData = new FormData(form);
+            formData.append("file", $("#ajaxFile")[0].files[0]);
+            formData.append("sn", $("#ajaxSn").val());
+            formData.append("type", $("#ajaxType").val());
+
+            $.ajax({
+                url : "/ajax/uploadBrandFile",
+                type : "POST",
+                processData : false,
+                contentType : false,
+                data : formData
+            }).done(function(result){
+                alert(result.msg);
+                $("#ajaxFile").val("");
+                reload(0);
+            });
+        }
+    </script>
+
+{% include "admin/common/footer.html" %}

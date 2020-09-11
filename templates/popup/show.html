@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Show</title>
+    <script src="{{url_for('static', filename='assets/js/jquery.min.js')}}"></script>
+    <script src="{{url_for('static', filename='assets/bootstrap/js/bootstrap.min.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
+</head>
+<body>
+        <div>
+            <select name="a_type" id="a_type" style="width:40%;" >
+                {% for opt in options %}
+                <option value="{{opt['value']}}">{{opt['label']}}</option>
+                {% endfor %}
+            </select>
+            <select name="o_sn" id="o_sn" style="width:40%;display:none;">
+                {% for order in ordered %}
+                <option value="{{order['o_sn']}}">{{order['o_sn']}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <h2 id="title"></h2>
+        </div>
+        <div>
+            <h2 id="content"></h2>
+        </div>
+        <input type="button" id="back" value="돌아가기"/>
+    <script>
+        $("#back").on("click", function(){
+            close();
+        });
+        $("#back").on("click", function(){
+            var cnnc_sn = $(this).data('sn');
+            location.href = '/popup/showAsk?a_sn='+cnnc_sn;
+        });
+
+        var url = new URL(window.location.href );
+        var a_sn = url.searchParams.get("a_sn");
+        if(a_sn){
+
+            $.ajax({
+                url : '/ajax/showArticle',
+                method: 'post',
+                data : {"a_sn" : a_sn}
+            }).done(function(data){
+                if(data.result == -1 || data.result == 0){
+                    alert(data.msg);
+                    close();
+                }
+                else{
+
+                    var pValue = data.data[0];
+                    console.log(pValue);
+                    $("#a_type").val(pValue.a_type);
+                    $("#a_type").trigger('change');
+                    $("#a_type").prop('disabled', true);
+                    if(pValue.o_sn){
+                        $("#o_sn").show();
+                        $("#o_sn").val(pValue.o_sn);
+                        $("#o_sn").prop('disabled', true);
+                    }
+                    $("#title").html(pValue.a_title);
+                    $("#content").html(pValue.a_content);
+                }
+            })
+        }
+    </script>
+</body>
+</html>

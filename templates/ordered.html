@@ -1,0 +1,222 @@
+{% with menuList = menuList %}
+{% with menu = menu %}
+{% include "common/header.html" %}
+{% endwith %}
+{% endwith %}
+<div class="container" style="max-width:80%;margin-top:10vh;">
+
+    <div class="container-fluid">
+        <h5 class="mb-4"><span class="text-dark">{{u_id}}</span>님, 환영합니다!</h5>
+        <button class="btn btn-primary" id="foreign">수출인증하기</button>
+        <div class="row">
+<!--            <div class="col-xl-3 align-self-center" style="text-align: center;"><input type="text" placeholder="브랜드 이름을 입력하세요." style="width: 100%;" id="brand"></div>-->
+<!--            <div class="col-xl-3 align-self-center" style="text-align: center;"><select style="text-align: center;width: 100%;" id="day"><option value="-1" selected="" disabled>요일을 선택하세요.</option><option value="1">월요일</option><option value="2">화요일</option><option value="3">수요일</option><option value="4">목요일</option><option value="5">금요일</option><option value="6">토요일</option><option value="0">일요일</option></select></div>-->
+<!--            <div class="col-xl-2"><button class="btn btn-primary" type="button" id="goRegister">등록</button></div>-->
+        </div>
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">주문현황</p>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive table mt-2" id="dataTable_div" role="grid" aria-describedby="dataTable_info">
+                    <style>
+                        .table td, .table th {
+                            vertical-align: middle !important;
+                        }
+
+                    </style>
+                    <table class="table my-0" id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>발주날짜</th>
+                                <th>주문번호</th>
+                                <th>브랜드</th>
+                                <th>문의하기</th>
+                                <th>예정확정일</th>
+                                <th>배송예정일</th>
+                                <th>진행상태</th>
+                                <th>송장번호</th>
+                                <th>주문금액</th>
+                                <th>확정금액</th>
+                                <th>세금계산서</th>
+                                <th>확정서</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 align-self-center">
+                        <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">Showing <span id="start">0</span> to <span id="end">0</span> of <span id="recordsTotal">0</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
+                            <ul class="pagination" id="pagination">
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <script>
+        openWindowPop = function(url, name){
+            var options = 'top=10, left=10, width=500, height=600, status=no, menubar=no, toolbar=no, resizable=no';
+            window.open(url, name, options);
+        }
+
+        $("#foreign").on("click", function(){
+            openWindowPop('/popup/foreign', 'certificate');
+        });
+
+        $(document).on("click", ".ask", function(){
+            var sn = $(this).data('sn');
+            openWindowPop('/popup/ask?o_sn='+sn, 'ask');
+
+        });
+    </script>
+    <script>
+        var table;
+        reload = function(currentPage){
+
+            $.ajax({
+                url : '/ajax/getOrdered',
+                method : 'get',
+                data : {"page" : currentPage}
+            }).done(function(result){
+                console.log(result);
+                console.log($('#dataTable'));
+                if(table){
+                    table.destroy();
+                }
+                table = $('#dataTable').DataTable( {
+                    paging:  false,
+                    info:   false,
+                    searching: false,
+                    pageLength: 5,
+                    data: result.data,
+                    columns: [
+                        {   data: 'regist_dtm',
+                            className: 'text-center',
+                            render: function ( data, type, row, meta ) {
+
+                                //return meta.settings._iDisplayStart + meta.row + 1;
+                                return data.substring(0, 10);
+                            }
+                        },
+                        {   data: 'o_sn',
+                            className: 'text-left',
+                            render: function ( data, type, row ) {
+                                return data;
+                            }
+                        },
+                        {   data: 'brnd_nm',
+                            className: 'text-left',
+                            render: function ( data, type, row ) {
+                                return data;
+                            }
+                        },
+                        {   data: 'o_sn',
+                            className: 'text-left',
+                            render: function ( data, type, row ) {
+                                return '<button class="btn btn-primary ask" data-sn="'+data+'">문의</button>';
+                            }
+                        },
+                        {   data: 'o_day',
+                            className: 'text-center',
+                            render: function ( data, type, row ) {
+                                return data;
+                            }
+                        },
+                        {   data: 'o_deli',
+                            className: 'text-center',
+                            render: function ( data, type, row ) {
+                                return data;
+                            }
+                        },
+                        {   data: 'o_sttus',
+                            className: 'text-right',
+                            render: function ( data, type, row ) {
+                                return row.sttus_date.substring(0, 10)+' '+row.sttus;
+
+                            }
+                        },
+                        {   data: 'o_num',
+                            className: 'text-right',
+                            render: function ( data, type, row ) {
+                                return data;
+
+                            }
+                        },
+                        {   data: 'o_price',
+                            className: 'text-right',
+                            render: function ( data, type, row ) {
+                                if(data == null || data == ''){
+                                    return '';
+                                }
+                                return data.format();
+
+                            }
+                        },
+                        {   data: 'o_final_price',
+                            className: 'text-right',
+                            render: function ( data, type, row ) {
+                                if(data == null || data == ''){
+                                    return '';
+                                }
+                                return data.format();
+
+                            }
+                        },
+                        {   data: 'o_sn',
+                            className: 'text-right',
+                            render: function ( data, type, row ) {
+                                var _status = "";
+                                if(row.o_final_price == null)
+                                    _status = " disabled";
+                                return '<button class="btn btn-primary tax" data-sn="'+data+'" '+_status+'>발행</button>';
+
+                            }
+                        },
+                        {   data: 'o_confirm_path',
+                            className: 'text-right',
+                            render: function ( data, type, row ) {
+                                var _status = "";
+                                if(data == null)
+                                    _status = " disabled";
+                                var html = '';
+                                html += '<form action="/ajax/downloadConfirm" method="post">';
+                                html += '   <input type="hidden" name="sn" value="'+row.o_sn+'">';
+                                html += '   <button type="submit" class="btn btn-primary path" data-path="'+data+'" '+_status+'>다운로드</button>';
+                                html += '</form>';
+                                return html;
+
+                            }
+                        }
+                    ]
+                } );
+
+                var totalPage = parseInt((result.recordsTotal-1)/10) + 1;
+                $("#start").html(currentPage*10);
+                $("#end").html(currentPage*10 + result.data.length);
+                $("#recordsTotal").html(result.recordsTotal);
+                var html = '';
+                var __class = (currentPage == 0) ? ' disabled' : '';
+                html += '<li class="page-item'+__class+'"><a class="page-link" aria-label="Previous" id="dataTable_previous" aria-controls="dataTable" href="javascript:reload('+(currentPage-1)+');"><span aria-hidden="true">«</span></a></li>';
+                for(let i=0;i < totalPage;i++){
+                    let _class = (i == currentPage) ? " active" : "";
+                    html += '<li class="page-item'+_class+'"><a class="page-link" aria-controls="dataTable"  href="javascript:reload('+i+');">'+(i+1)+'</a></li>';
+                }
+                var __class = (currentPage == (totalPage-1)) ? ' disabled' : '';
+                html += '<li class="page-item'+__class+'"><a class="page-link" aria-label="Next" id="dataTable_next" aria-controls="dataTable"  href="javascript:reload('+(currentPage+1)+');"><span aria-hidden="true">»</span></a></li>';
+
+
+                $("#pagination").html(html);
+            });
+
+        }
+        reload(0);
+    </script>
+{% include "common/footer.html" %}

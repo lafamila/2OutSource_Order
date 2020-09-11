@@ -1,0 +1,58 @@
+{% with menuList = menuList %}
+{% with menu = menu %}
+{% include "admin/common/header.html" %}
+{% endwith %}
+{% endwith %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6 col-xl-4 mb-4">
+                <div class="card shadow border-left-primary py-2">
+                    <div class="card-body">
+                        <div class="row align-items-center no-gutters">
+                            <div class="col mr-2">
+                                <div class="text-uppercase text-primary font-weight-bold text-xs mb-1"><span>주문</span></div>
+                                <div class="text-dark font-weight-bold h5 mb-0"><span>(1건)</span></div>
+                            </div>
+                            <div class="col-auto"><i class="fas fa-calendar fa-2x text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4 mb-4">
+                <div class="card shadow border-left-success py-2">
+                    <div class="card-body">
+                        <div class="row align-items-center no-gutters">
+                            <div class="col mr-2">
+                                <div class="text-uppercase text-success font-weight-bold text-xs mb-1"><span>결제</span></div>
+                                <div class="text-dark font-weight-bold h5 mb-0"><span>(2건)</span></div>
+                            </div>
+                            <div class="col-auto"><i class="fas fa-dollar-sign fa-2x text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4 mb-4">
+                <div class="card shadow border-left-info py-2">
+                    <div class="card-body">
+                        <div class="row align-items-center no-gutters">
+                            <div class="col mr-2">
+                                <div class="text-uppercase text-info font-weight-bold text-xs mb-1"><span>문의글</span></div>
+                                <div class="text-dark font-weight-bold h5 mb-0 mr-3"><span>3건</span></div>
+                            </div>
+                            <div class="col-auto"><i class="fas fa-clipboard-list fa-2x text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <p>기존 공지사항이 작성되어있는 공간입니다.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col"></div>
+        </div>
+    </div>
+{% include "admin/common/footer.html" %}

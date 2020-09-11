@@ -1,0 +1,77 @@
+{% with menuList = menuList %}
+{% with menu = menu %}
+{% include "common/header.html" %}
+{% endwith %}
+{% endwith %}
+<div class="container">
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <p class="text-primary m-0 font-weight-bold">등록된 브랜드 목록</p>
+            <form id="ajaxFrom" method="post">
+               <input type="file" id="ajaxFile" onChange="ajaxFileChange();" style="display:none;"/>
+               <input type="hidden" id="ajaxSn" name="sn"/>
+               <input type="hidden" id="ajaxType" name="type"/>
+            </form>
+
+        </div>
+
+        <div class="card-body" id="dataTable">
+
+        </div>
+    </div>
+</div>
+    <script>
+
+        var table;
+        reload = function(currentUser){
+            $.ajax({
+                url : '/ajax/getAllBrands',
+                method : 'get',
+                data : {"u_sn" : currentUser}
+            }).done(function(result){
+                var html = '';
+                console.log(result);
+                $.each(result.data, function(pIndex, pValue){
+                    if(pIndex % 4 == 0){
+                    html += '<div class="row" id="row'+(parseInt(pIndex/4))+'">';
+                    }
+                    var _class = (pIndex % 4 == 3) ? " text-nowrap" : "";
+                    var status1 = ((pValue.brnd_path == null)||(!pValue.hasOwnProperty("path") || pValue.path != 1)) ? " disabled" : "";
+                    var status2 = ((pValue.brnd_vip == null)||(!pValue.hasOwnProperty("vip") || pValue.vip != 1)) ? " disabled" : "";
+                    html += '<div class="col-md-6 col-xl-3'+_class+'">';
+                    html += '    <div class="card">';
+                    html += '        <div class="card-body" style="text-align:center;">';
+                    html += '            <h4 class="card-title">'+pValue.brnd_nm+'</h4>';
+                    html += '            <div class="form-check" style="padding-left: 0rem;">';
+                    html += '                <span class="col-xl-4">';
+                    html += '                        <form action="/ajax/downloadFile" method="post" id="form'+pValue.ub_sn+'">';
+                    html += '                    <div class="btn-group" role="group">';
+                    html += '                            <button class="btn btn-primary download" data-id="form'+pValue.ub_sn+'" data-col="0" type="button"'+status1+'>일반</button>';
+                    html += '                            <button class="btn btn-primary download" data-id="form'+pValue.ub_sn+'" data-col="1" type="button"'+status2+'>VIP</button>';
+                    html += '                    </div>';
+                    html += '                            <input type="hidden" name="sn" value="'+pValue.brnd_sn+'">';
+                    html += '                            <input type="hidden" name="col">';
+                    html += '                        </form>';
+                    html += '                </span>';
+                    html += '            </div>';
+                    html += '        </div>';
+                    html += '    </div>';
+                    html += '</div>';
+
+                    if(pIndex % 4 == 3){
+                    html += '</div>';
+                    }
+                });
+                $("#dataTable").html(html);
+            });
+        }
+
+        $(document).on("click", ".download", function(e){
+            e.preventDefault();
+            $(this).parent().parent().find("input[name=col]").val($(this).data("col"));
+            $("#"+$(this).data("id"))[0].submit();
+
+        });
+        reload(0);
+    </script>
+{% include "common/footer.html" %}

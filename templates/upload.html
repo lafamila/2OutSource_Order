@@ -1,0 +1,125 @@
+{% with menuList = menuList %}
+{% with menu = menu %}
+{% include "common/header.html" %}
+{% endwith %}
+{% endwith %}
+<div class="container">
+<form id="ajaxFrom" method="post">
+   <input type="file" id="ajaxFile" onChange="ajaxFileChange();" style="display:none;"/>
+   <input type="hidden" id="ajaxSn" name="sn"/>
+</form>
+
+<div class="row" style="margin-top:15vh;">
+
+    <div class="col-md-4 col-sm-12">
+        <div class="row">
+            <div class="col-md-8 col-sm-8">
+                <select id="brand" class="col-md-12 col-sm-12" style="height:100%;">
+                    <option value="" selected disabled>데이터 로딩중</option>
+                </select>
+            </div>
+            <div class="col-md-4 col-sm-4">
+                <button class="btn btn-primary" id="upload" disabled>업로드</button>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-8 col-sm-12" id="log">
+        <div>업로드 내역이 없습니다.</div>
+    </div>
+</div>
+</div>
+<script>
+        $("#upload").on("click", function(){
+            var data = $("#brand").val();
+            if(data){
+                ajaxFileUpload(data);
+            }
+        });
+
+        $("#brand").on("change", function(){
+            var data = $(this).val();
+            if(data){
+                $("#upload").prop("disabled", false);
+            }
+        });
+
+        function ajaxFileUpload(sn) {
+            $("#ajaxFile").click();
+            $("#ajaxSn").val(sn);
+        }
+
+        function ajaxFileChange() {
+            ajaxFileTransmit();
+        }
+
+        function ajaxFileTransmit() {
+            var form = $("#ajaxFrom")[0];
+            var formData = new FormData(form);
+            formData.append("file", $("#ajaxFile")[0].files[0]);
+            formData.append("sn", $("#ajaxSn").val());
+
+            $.ajax({
+                url : "/ajax/uploadBrand",
+                type : "POST",
+                processData : false,
+                contentType : false,
+                data : formData
+            }).done(function(result){
+                alert(result.msg);
+                $("#ajaxFile").val("");
+                reload(0);
+            });
+        }
+reload = function(something){
+    $.ajax({
+        url : '/ajax/getBrandLog',
+        method : 'post'
+    }).done(function(data){
+        if(data.result == 1){
+            var html = '';
+            $.each(data.data, function(pIndex, pValue){
+                var text = pIndex+'. '+pValue.brnd_nm+' '+pValue.regist_dtm+' 업로드 완료';
+                html += '<div class="row">'+text+'</div>';
+            });
+            if(data.data.length > 0)
+                $("#log").html(html);
+        }
+    });
+}
+
+
+</script>
+
+<script>
+$.ajax({
+    url : '/ajax/getSchedule',
+    method : 'post'
+}).done(function(result){
+    var url = new URL(window.location.href );
+    var brand = url.searchParams.get("brand");
+
+    var html = '';
+    if(brand){
+        html += '<option value="" disabled>브랜드를 선택해주세요</option>';
+        $("#upload").prop("disabled", false);
+    }
+    else{
+        html += '<option value="" disabled selected>브랜드를 선택해주세요</option>';
+    }
+    $.each(result, function(day, data){
+        $.each(data, function(pIndex, pValue){
+            var _status = "";
+            if(brand == pValue.brnd_sn){
+                _status = " selected";
+            }
+            html += '<option value="'+pValue.brnd_sn+'"'+_status+'>'+pValue.name+'</option>';
+        });
+    });
+    $("#brand").html(html);
+});
+reload(0);
+</script>
+
+
+{% include "common/footer.html" %}

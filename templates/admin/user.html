@@ -1,0 +1,128 @@
+{% with menuList = menuList %}
+{% with menu = menu %}
+{% include "admin/common/header.html" %}
+{% endwith %}
+{% endwith %}
+    <div class="container-fluid">
+        <h3 class="text-dark mb-4">고객관리</h3>
+        <div class="row">
+            <div class="col-xl-3 align-self-center" style="text-align: center;"><select style="text-align: center;width: 100%;" id="condition"><option value="1" selected="">ID</option><option value="2">이름</option><option value="3">업체명</option></select></div>
+            <div class="col-xl-3 align-self-center" style="text-align: center;"><input type="text" placeholder="검색 내용" style="width: 100%;" id="query"></div>
+            <div class="col-xl-2"><button class="btn btn-primary" type="button" id="goSearch">검색</button></div>
+            <div class="col-xl-2">
+                <form action="/ajax/downloadCert" method="post">
+                    <input type="hidden" name="u_sn" id="u_sn">
+                    <button class="btn btn-primary" type="submit" id="download" disabled>다운로드</button>
+                </form>
+            </div>
+        </div>
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">등록된 브랜드 목록</p>
+                <form id="ajaxFrom" method="post">
+                   <input type="file" id="ajaxFile" onChange="ajaxFileChange();" style="display:none;"/>
+                   <input type="hidden" id="ajaxSn" name="sn"/>
+                   <input type="hidden" id="ajaxType" name="type"/>
+                </form>
+
+            </div>
+            <div class="card-body" id="dataTable">
+
+            </div>
+        </div>
+    </div>
+    <script>
+        var table;
+        reload = function(currentUser){
+            if(currentUser != 0){
+                $.ajax({
+                    url : '/ajax/getAllBrands',
+                    method : 'get',
+                    data : {"u_sn" : currentUser}
+                }).done(function(result){
+                    var html = '';
+                    console.log(result);
+                    $.each(result.data, function(pIndex, pValue){
+                        if(pIndex % 4 == 0){
+                        html += '<div class="row" id="row'+(parseInt(pIndex/4))+'">';
+                        }
+                        var _class = (pIndex % 4 == 3) ? " text-nowrap" : "";
+                        var status1 = (pValue.brnd_path == null) ? " disabled" : "";
+                        var status2 = (pValue.brnd_vip == null) ? " disabled" : "";
+                        var checked1 = (pValue.hasOwnProperty("path") && pValue.path == 1) ? " checked" : "";
+                        var checked2 = (pValue.hasOwnProperty("vip") && pValue.vip == 1) ? " checked" : "";
+                        html += '<div class="col-md-6 col-xl-3'+_class+'">';
+                        html += '    <div class="card">';
+                        html += '        <div class="card-body">';
+                        html += '            <h4 class="card-title">'+pValue.brnd_nm+'</h4>';
+                        html += '            <div class="form-check">';
+                        html += '                <span class="col-xl-2">';
+                        html += '                    <input class="form-check-input change" type="checkbox" data-stand="ub_sn" data-sn="'+pValue.ub_sn+'" data-col="brnd_path" data-table="user_brand" id="path'+pValue.brnd_sn+'"'+status1+' '+checked1+'>';
+                        html += '                    <label class="form-check-label" for="path'+pValue.brnd_sn+'">일반</label>';
+                        html += '                </span>';
+                        html += '                <span class="col-xl-2">';
+                        html += '                    <input class="form-check-input change" type="checkbox" data-stand="ub_sn" data-sn="'+pValue.ub_sn+'" data-col="brnd_vip" data-table="user_brand" id="vip'+pValue.brnd_sn+'"'+status2+' '+checked2+'>';
+                        html += '                    <label class="form-check-label" for="vip'+pValue.brnd_sn+'">VIP</label>';
+                        html += '                </span>';
+                        html += '            </div>';
+                        html += '        </div>';
+                        html += '    </div>';
+                        html += '</div>';
+
+                        if(pIndex % 4 == 3){
+                        html += '</div>';
+                        }
+                    });
+                    $("#dataTable").html(html);
+                });
+            }
+            else{
+                $("#u_sn").val("");
+                $("#download").prop("disabled", true);
+            }
+        }
+
+
+        $("#goSearch").on("click", function(){
+            var condition = $("#condition").val();
+            var query = $("#query").val();
+            if(query == "" || query == null){
+                $("#query").focus();
+                alert("검색 내용을 입력해주세요");
+                return false;
+            }
+            if(condition == -1 || condition == "" || condition == null){
+                $("#condition").focus();
+                alert("검색 조건을 선택해주세요");
+                return false;
+            }
+            var params = {"condition" : condition, "query" : query};
+            $.ajax({
+                url : '/ajax/searchUser',
+                method : 'post',
+                data : params
+            }).done(function(data){
+                if(data.result == 1){
+                    alert("검색 성공");
+                    console.log(data.data);
+                    if(data.data.c_path != null){
+                        $("#u_sn").val(data.data.u_sn);
+                        $("#download").prop("disabled", false);
+                    }
+                    //TODO : 다운로드 버튼 활성화
+                    //TODO : SN 이용해서 브랜드 목록 및 브랜드별 권한 정리
+                    reload(data.data.u_sn);
+
+                }
+                else{
+                    alert("일치하는 사용자가 없습니다.");
+                }
+            });
+        });
+        reload(0);
+    </script>
+    <script type="text/javascript">
+
+    </script>
+
+{% include "admin/common/footer.html" %}

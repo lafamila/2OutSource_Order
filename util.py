@@ -1,5 +1,6 @@
 import pymysql
 import datetime
+from pytz import timezone, utc
 
 SECRET_KEY = 'hello,python'
 
@@ -16,13 +17,19 @@ class DB:
     RESULT_NOT_EXIST = 2
 
     def __init__(self, host, user, password, db, port=3306):
-        self._conn = pymysql.connect(host, user, password, db, port=port)
+        self.host = host
+        self.user = user
+        self.password = password
+        self.db = db
+        self.port = port
 
-    def _cursor(self):
-        return self._conn.cursor(pymysql.cursors.DictCursor)
+    def _cursor(self, _conn):
+        return _conn.cursor(pymysql.cursors.DictCursor)
 
     def _getValue(self, value):
         if type(value) is datetime.datetime:
+            return str(value)
+        elif type(value) is datetime.date:
             return str(value)
         else:
             return value
@@ -48,19 +55,30 @@ class DB:
             return DB.RESULT_NOT_EXIST
 
     def __call__(self, sql, params=None):
-        _curs = self._cursor()
+        _conn = pymysql.connect(self.host, self.user, self.password, self.db, port=self.port)
+        _curs = self._cursor(_conn)
         if params:
             _curs.execute(sql, params)
         else:
             _curs.execute(sql)
         if self._getQueryType(sql) is DB.RESULT_EXIST:
             _result = _curs.fetchall()
+            _conn.close()
             return self._getResult(_result)
         elif self._getQueryType(sql) is DB.RESULT_EXIST_ID:
             _rowId = _curs.lastrowid
-            self._conn.commit()
+            _conn.commit()
+            _conn.close()
             return _rowId
         else:
-            self._conn.commit()
+            _conn.commit()
+            _conn.close()
             return None
 
+def getToday(time=False, delta=0):
+    KST = timezone('Asia/Seoul')
+    now = datetime.datetime.utcnow()
+    now = utc.localize(now).astimezone(KST)
+    if time:
+        return str(now)[:19]
+    return str(now.date() - datetime.timedelta(days=delta))
