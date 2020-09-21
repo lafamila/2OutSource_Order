@@ -6,7 +6,14 @@
     <div class="container-fluid">
         <h3 class="text-dark mb-4">고객관리</h3>
         <div class="row">
-            <div class="col-xl-3 align-self-center" style="text-align: center;"><select style="text-align: center;width: 100%;" id="condition"><option value="1" selected="">ID</option><option value="2">이름</option><option value="3">업체명</option></select></div>
+            <div class="col-xl-3 align-self-center" style="text-align: center;">
+                <select style="text-align: center;width: 100%;" id="condition">
+                    <option value="0" selected="">전체</option>
+                    <option value="1">ID</option>
+                    <option value="2">이름</option>
+                    <option value="3">업체명</option>
+                </select>
+            </div>
             <div class="col-xl-3 align-self-center" style="text-align: center;"><input type="text" placeholder="검색 내용" style="width: 100%;" id="query"></div>
             <div class="col-xl-2"><button class="btn btn-primary" type="button" id="goSearch">검색</button></div>
             <div class="col-xl-2">
@@ -16,9 +23,40 @@
                 </form>
             </div>
         </div>
+
+    <div class="row" id="userListRow" style="display:none;">
+        <div class="container-fluid">
+            <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
+            <div class="carousel-inner row w-100 mx-auto" id="userList">
+            </div>
+            <a class="carousel-control carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
+            <span type="button" class="btn btn-outline-primary">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-compact-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223z"></path>
+                </svg>
+            </span>
+            </a>
+            <a class="carousel-control carousel-control-next" href="#myCarousel" role="button" data-slide="next">
+            <span type="button" class="btn btn-outline-primary">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-compact-right" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M6.776 1.553a.5.5 0 0 1 .671.223l3 6a.5.5 0 0 1 0 .448l-3 6a.5.5 0 1 1-.894-.448L9.44 8 6.553 2.224a.5.5 0 0 1 .223-.671z"></path>
+                </svg>
+            </span>
+            </a>
+
+
+            </a>
+            </div>
+        </div>
+    </div>
+
         <div class="card shadow">
             <div class="card-header py-3">
                 <p class="text-primary m-0 font-weight-bold">등록된 브랜드 목록</p>
+                <input type="checkbox" id="allPath"/>
+                <label class="form-check-label" for="allPath">일반</label>
+                <input type="checkbox" id="allVip"/>
+                <label class="form-check-label" for="allVip">VIP</label>
                 <form id="ajaxFrom" method="post">
                    <input type="file" id="ajaxFile" onChange="ajaxFileChange();" style="display:none;"/>
                    <input type="hidden" id="ajaxSn" name="sn"/>
@@ -27,13 +65,15 @@
 
             </div>
             <div class="card-body" id="dataTable">
-
+                <p>사용자를 선택해주세요.</p>
             </div>
         </div>
     </div>
     <script>
         var table;
         reload = function(currentUser){
+            $("#allPath").prop("checked", false);
+            $("#allVip").prop("checked", false);
             if(currentUser != 0){
                 $.ajax({
                     url : '/ajax/getAllBrands',
@@ -105,23 +145,143 @@
                 if(data.result == 1){
                     alert("검색 성공");
                     console.log(data.data);
-                    if(data.data.c_path != null){
-                        $("#u_sn").val(data.data.u_sn);
-                        $("#download").prop("disabled", false);
+                    var html = '';
+                    //html += '<div class="carousel-item col-md-3 active">';
+                    $.each(data.data, function(pIndex, pValue){
+                        var c_path = pValue.c_path == null ? '' : pValue.c_path;
+                        var _class = (pIndex == 0) ? ' active' : '';
+                        html += '<div class="carousel-item col-md-3 userItem'+_class+'" data-path="'+c_path+'" data-sn="'+pValue.u_sn+'">';
+                        html += '   <div class="card">';
+                        html += '       <div class="card-body">';
+                        html += '           <h4 class="card-title">'+pValue.u_id+'</h4>';
+                        html += '           <p class="card-text">이름 : '+pValue.u_nm+'</p>';
+                        html += '           <p class="card-text">회사 : '+pValue.u_cp+'</p>';
+                        html += '       </div>';
+                        html += '   </div>';
+                        html += '</div>';
+                    });
+                    $("#userList").html(html);
+                    $("#userListRow").show();
+                    if(data.data.length <= 4){
+                        $(".carousel-control").hide();
                     }
-                    //TODO : 다운로드 버튼 활성화
-                    //TODO : SN 이용해서 브랜드 목록 및 브랜드별 권한 정리
-                    reload(data.data.u_sn);
+
+
+
 
                 }
                 else{
+                    $("#userListRow").hide();
                     alert("일치하는 사용자가 없습니다.");
                 }
+            });
+        });
+
+        $(document).on("click", ".userItem", function(){
+            $(document).find(".userItem").removeClass('selected');
+            $(this).addClass('selected');
+            var u_sn = $(this).data('sn');
+            var c_path = $(this).data('path');
+            if(c_path != ''){
+                $("#u_sn").val(u_sn);
+                $("#download").prop("disabled", false);
+            }
+            else{
+                $("#u_sn").val('');
+                $("#download").prop("disabled", true);
+            }
+            reload(u_sn);
+
+        });
+        $("#allPath").on("change", function(){
+            var isChecked = $(this).is(":checked");
+            $(document).find("input[data-col=brnd_path]:enabled").prop("checked", isChecked);
+            var tables = [];
+            var cols = [];
+            var database = [];
+            var sns = [];
+            var stands = [];
+            $.each($(document).find("input[data-col=brnd_path]:enabled"), function(pI, pV){
+                var data = isChecked;
+                var sn = $(this).data('sn');
+                var table = $(this).data('table');
+                var col = $(this).data('col');
+                var stand = $(this).data('stand');
+                tables.push(table);
+                cols.push(col);
+                database.push(data);
+                sns.push(sn);
+                stands.push(stand);
+            });
+
+            var params = {"table[]" : tables, "col[]" : cols, "data[]" : database, "sn[]" : sns, "stand[]" : stands};
+            $.ajax({
+                url : '/ajax/updateMulti',
+                method : 'post',
+                data : params
+            }).done(function(result){
+                alert(result.msg);
+            });
+
+        });
+        $("#allVip").on("change", function(){
+            var isChecked = $(this).is(":checked");
+            $(document).find("input[data-col=brnd_vip]:enabled").prop("checked", isChecked);
+            var tables = [];
+            var cols = [];
+            var database = [];
+            var sns = [];
+            var stands = [];
+            $.each($(document).find("input[data-col=brnd_vip]:enabled"), function(pI, pV){
+                var data = isChecked ? 1 : 0;
+                var sn = $(this).data('sn');
+                var table = $(this).data('table');
+                var col = $(this).data('col');
+                var stand = $(this).data('stand');
+                tables.push(table);
+                cols.push(col);
+                database.push(data);
+                sns.push(sn);
+                stands.push(stand);
+            });
+
+            var params = {"table[]" : tables, "col[]" : cols, "data[]" : database, "sn[]" : sns, "stand[]" : stands};
+            console.log(params);
+            $.ajax({
+                url : '/ajax/updateMulti',
+                method : 'post',
+                data : params
+            }).done(function(result){
+                alert(result.msg);
             });
         });
         reload(0);
     </script>
     <script type="text/javascript">
+        $(document).ready(function() {
+          $("#myCarousel").on("slide.bs.carousel", function(e) {
+            var $e = $(e.relatedTarget);
+            var idx = $e.index();
+            var itemsPerSlide = 4;
+            var totalItems = $(".carousel-item").length;
+
+            if (idx >= totalItems - (itemsPerSlide - 1)) {
+              var it = itemsPerSlide - (totalItems - idx);
+              for (var i = 0; i < it; i++) {
+                // append slides to end
+                if (e.direction == "left") {
+                  $(".carousel-item")
+                    .eq(i)
+                    .appendTo(".carousel-inner");
+                } else {
+                  $(".carousel-item")
+                    .eq(0)
+                    .appendTo($(this).find(".carousel-inner"));
+                }
+              }
+            }
+          });
+        });
 
     </script>
 

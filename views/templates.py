@@ -66,7 +66,7 @@ def showAsk():
 
 
 
-@bp.route("/login")
+@bp.route("/login", methods=['GET', 'POST'])
 def login():
     menu = request.args.get('menu')
     isLogin = loginCheck(session)

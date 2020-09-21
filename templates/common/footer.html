@@ -10,6 +10,7 @@
                             <div class="illustration"><i class="icon ion-ios-navigate"></i></div>
                             <div class="form-group"><input class="form-control" type="text" name="u_id" id="u_id" placeholder="ID" /></div>
                             <div class="form-group"><input class="form-control" type="password" name="u_pw" id="u_pw" placeholder="Password" /></div>
+                            <div class="form-group" id="u_pw_Toggle" style="display:none;"><input class="form-control" type="password" name="u_pw_check" id="u_pw_check" placeholder="Password Again" /></div>
                             <div class="form-group" id="u_name_Toggle" style="display:none;"><input class="form-control" type="text" name="u_nm" id="u_nm" placeholder="Name" /></div>
                             <div class="form-group" id="u_company_Toggle" style="display:none;"><input class="form-control" type="text" name="u_cp" id="u_cp" placeholder="Company" /></div>
                             <div class="form-group" id="login_section"><button class="btn btn-primary btn-block" id="login">로그인</button></div>
@@ -30,6 +31,7 @@
         $('#show').on('click', function(){
             $("#join_section").show();
             $("#u_name_Toggle").show();
+            $("#u_pw_Toggle").show();
             $("#u_company_Toggle").show();
             $("#login_section").hide();
             $("#show").hide();
@@ -38,6 +40,7 @@
         $('#hide').on('click', function(){
             $("#join_section").hide();
             $("#u_name_Toggle").hide();
+            $("#u_pw_Toggle").hide();
             $("#u_company_Toggle").hide();
             $("#login_section").show();
             $("#show").show();
@@ -87,6 +90,12 @@
         $('#join').on('click', function(){
             var u_id = $("#u_id").val();
             var u_pw = $("#u_pw").val();
+            var u_pw_check = $("#u_pw_check").val();
+            if(u_pw != u_pw_check){
+                alert("비밀번호가 일치하지 않습니다.");
+                $("#u_pw_check").focus();
+                return;
+            }
             var u_nm = $("#u_nm").val();
             var u_cp = $("#u_cp").val();
             var params = {'u_id' : u_id, 'u_pw' : u_pw, 'u_nm' : u_nm, 'u_cp' : u_cp};

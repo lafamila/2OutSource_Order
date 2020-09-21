@@ -5,19 +5,22 @@
 {% endwith %}
 <div class="container">
 
-<div class="row" style="height:200px;">
+<div class="row">
     <div class="col-md-12">
         <h1 style="color:black;">공지사항</h1>
-        <ol id="main">
-        </ol>
+        <div id="accordion">
+        </div>
     </div>
 </div>
+
+<hr/>
 <div class="row" style="height:500px;">
     <div class="col-md-12" id="detail"></div>
 </div>
 </div>
 
 <script>
+
     $.ajax({
         url : '/ajax/getDetail',
         method : 'get'
@@ -36,22 +39,29 @@
         method : 'get'
     }).done(function(result){
         if(result.data.length > 0){
-            var pValue = result.data[0];
-            var mains = pValue.m_text.split("\n");
             var html = '';
-            $.each(mains, function(pIndex, pValue){
+            $.each(result.data, function(pIndex, pValue){
                 if(pIndex >= 5)
                     return false;
-                html += '<li>'+pValue+'</li>';
+                html += '<div class="card">';
+                html += '   <div class="card-header" id="heading'+pIndex+'">';
+                html += '       <h5 class="mb-0">';
+                html += '           <button class="btn btn-link" data-toggle="collapse" data-target="#collapse'+pIndex+'" aria-expanded="false" aria-controls="collapseOne">'+pValue.m_title+'</button>';
+                html += '       </h5>';
+                html += '   </div>';
+
+                html += '   <div id="collapse'+pIndex+'" class="collapse" aria-labelledby="heading'+pIndex+'" data-parent="#accordion">';
+                html += '       <div class="card-body">'+pValue.m_text+'</div>';
+                html += '   </div>';
+                html += '</div>';
 
             });
-            $("#main").html(html);
+            $("#accordion").html(html);
         }
         else{
-            $("#main").html("");
+            $("#accordion").html("");
         }
     });
-
 </script>
 
 {% include "common/footer.html" %}

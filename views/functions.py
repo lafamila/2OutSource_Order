@@ -59,6 +59,18 @@ def update():
     col_sn = request.form.get('stand')
     db("UPDATE {} SET {}=%s WHERE {}=%s".format(table, col, col_sn), (data, sn))
 
+    return jsonify({"result" : 1, "msg" : "성공적으로 수정되었습니다."})
+
+@fp.route('/updateMulti', methods=['POST'])
+def updateMulti():
+    tables = request.form.getlist('table[]')
+    cols = request.form.getlist('col[]')
+    sns = request.form.getlist('sn[]')
+    datas = request.form.getlist('data[]')
+    col_sns = request.form.getlist('stand[]')
+    for table, col, sn, data, col_sn in zip(tables, cols, sns, datas, col_sns):
+        db("UPDATE {} SET {}=%s WHERE {}=%s".format(table, col, col_sn), (data, sn))
+
     return jsonify({"result" : 1, "msg" : "성공적으로 수정되었습니다."})\
 
 @fp.route('/delete', methods=['POST'])
@@ -152,11 +164,20 @@ def searchUser():
         col = "u.U_ID"
     elif cond == 2:
         col = "u.U_NM"
-    else:
+    elif cond == 3:
         col = "u.U_CP"
-    result = db("SELECT u.*, c.C_REGION, c.C_CHANNEL, c.C_PATH FROM user u LEFT OUTER JOIN (SELECT * FROM cert WHERE C_SN IN (SELECT MAX(C_SN) FROM cert GROUP BY U_SN)) c ON u.U_SN=c.U_SN WHERE {}=%s".format(col), q)
+    else:
+        result = db(
+            "SELECT u.*, c.C_REGION, c.C_CHANNEL, c.C_PATH FROM user u LEFT OUTER JOIN (SELECT * FROM cert WHERE C_SN IN (SELECT MAX(C_SN) FROM cert GROUP BY U_SN)) c ON u.U_SN=c.U_SN WHERE {} LIKE %s OR {} LIKE %s OR {} LIKE %s".format(
+                'u.U_ID', 'u.U_NM', 'u.U_CP'), ('%{}%'.format(q), '%{}%'.format(q), '%{}%'.format(q)))
+        if len(result) > 0:
+            return jsonify({"result": 1, "data": result})
+        else:
+            return jsonify({"result": 0})
+
+    result = db("SELECT u.*, c.C_REGION, c.C_CHANNEL, c.C_PATH FROM user u LEFT OUTER JOIN (SELECT * FROM cert WHERE C_SN IN (SELECT MAX(C_SN) FROM cert GROUP BY U_SN)) c ON u.U_SN=c.U_SN WHERE {} LIKE %s".format(col), '%{}%'.format(q))
     if len(result) > 0:
-        return jsonify({"result" : 1, "data" : result[0]})
+        return jsonify({"result" : 1, "data" : result})
     else:
         return jsonify({"result" : 0})
 
@@ -232,8 +253,8 @@ def getOrdered():
 
         result = db("SELECT o.*, b.BRND_NM, s.O_STTUS, (SELECT CODE_LABEL FROM code WHERE CODE_NM='O_STTUS' AND CODE=s.O_STTUS) AS STTUS, s.REGIST_DTM AS STTUS_DATE FROM ordered o LEFT JOIN brand b ON o.brnd_sn=b.brnd_sn LEFT JOIN (SELECT * FROM status WHERE S_SN IN (SELECT MAX(S_SN) FROM status GROUP BY O_SN)) s ON o.O_SN=s.O_SN WHERE o.U_SN=%s ORDER BY o.REGIST_DTM LIMIT %s OFFSET %s", (u_sn, 10, page*10))
         count = db("SELECT * FROM ordered o WHERE o.U_SN=%s", (u_sn))
-
-        return jsonify({"data" : result, "recordsTotal" : len(count)})
+        user = db("SELECT * FROM user WHERE U_SN=%s", (u_sn))
+        return jsonify({"data" : result, "recordsTotal" : len(count), "user" : user[0]})
     else:
         return jsonify({"data" : [], "recordsTotal" : 0})
 
@@ -511,15 +532,26 @@ def getDetail():
 
 @fp.route('/insertMain', methods=['POST'])
 def insertMain():
-    data = request.form.get('data')
+    title = request.form.get('title')
+    text = request.form.get('text')
     now = getToday()
-    db("INSERT INTO main(M_TYPE, M_TEXT, REGIST_DTM) VALUES(1, %s, %s)", (data, now))
+    db("INSERT INTO main(M_TYPE, M_TITLE, M_TEXT, REGIST_DTM) VALUES(1, %s, %s, %s)", (title, text, now))
     return jsonify({"result" : 1})
 
 @fp.route('/getMain')
 def getMain():
-    detail = db("SELECT * FROM main WHERE M_TYPE=1 ORDER BY REGIST_DTM DESC LIMIT 1 OFFSET 0")
+    detail = db("SELECT * FROM main WHERE M_TYPE=1 ORDER BY REGIST_DTM DESC LIMIT 5 OFFSET 0")
     if len(detail) > 0:
         return jsonify({"data" : detail})
     else:
         return jsonify({"data" : []})
+
+@fp.route('/getMainAll')
+def getMainAll():
+
+    page = int(request.args.get("page"))
+
+    result = db("SELECT * FROM main WHERE M_TYPE=1 ORDER BY REGIST_DTM LIMIT %s OFFSET %s", (10, page*10))
+    count = db("SELECT * FROM main WHERE M_TYPE=1")
+
+    return jsonify({"data" : result, "recordsTotal" : len(count)})
