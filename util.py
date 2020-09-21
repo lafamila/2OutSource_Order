@@ -3,7 +3,7 @@ import datetime
 from pytz import timezone, utc
 
 SECRET_KEY = 'hello,python'
-
+PW = 'P@ssw0rd'
 def loginCheck(session):
     return 'u_sn' in session
 

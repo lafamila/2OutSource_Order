@@ -1,12 +1,12 @@
 from flask import Blueprint, render_template, abort, session, redirect, request, jsonify, url_for, send_file
-from util import DB, loginCheck, SECRET_KEY, getToday
+from util import DB, loginCheck, SECRET_KEY, getToday, PW
 import datetime
 import random
 
 fp = Blueprint('function', __name__, url_prefix='/ajax')
 fp.secret_key = SECRET_KEY
 
-db = DB(host='localhost', user='root', password='P@ssw0rd', db='order')
+db = DB(host='localhost', user='root', password=PW, db='order')
 
 
 

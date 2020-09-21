@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, abort, session, redirect, request
-from util import DB, loginCheck, SECRET_KEY
+from util import DB, loginCheck, SECRET_KEY, PW
 
 bp = Blueprint('template', __name__, url_prefix='/')
 bp.secret_key = SECRET_KEY
 
-db = DB(host='localhost', user='root', password='P@ssw0rd', db='order')
+db = DB(host='localhost', user='root', password=PW, db='order')
 
 
 
