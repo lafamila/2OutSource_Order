@@ -130,9 +130,9 @@ def uploadBrandFile():
     u_file.save(path)
 
     if int(file_type) == 0:
-        db("UPDATE BRAND SET BRND_PATH=%s WHERE BRND_SN=%s", (path, sn))
+        db("UPDATE brand SET BRND_PATH=%s WHERE BRND_SN=%s", (path, sn))
     else:
-        db("UPDATE BRAND SET BRND_VIP=%s WHERE BRND_SN=%s", (path, sn))
+        db("UPDATE brand SET BRND_VIP=%s WHERE BRND_SN=%s", (path, sn))
     return jsonify({"result" : 1, "msg" : "업로드되었습니다."})
 
 
