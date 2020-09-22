@@ -14,8 +14,6 @@ db = DB(host='localhost', user='root', password=PW, db='order')
 def login():
     u_id = request.form.get('u_id')
     u_pw = request.form.get('u_pw')
-    print(u_id)
-    print(u_pw)
     result = db("SELECT * FROM user WHERE U_ID=%s AND U_PW=%s", (u_id, u_pw))
     if result:
         session['u_sn'] = result[0]['u_sn']
@@ -110,7 +108,6 @@ def getAllBrands():
     if u_sn == 0:
         if "u_sn" in session:
             u_sn = session['u_sn']
-            print(u_sn)
             result = db("SELECT b.*, ub.UB_SN, ub.U_SN, ub.BRND_PATH as PATH, ub.BRND_VIP as VIP FROM brand b RIGHT JOIN user_brand ub ON b.BRND_SN=ub.BRND_SN WHERE ub.U_SN=%s ORDER BY b.REGIST_DTM", u_sn)
         else:
             return jsonify({"result" : 0})
@@ -484,9 +481,9 @@ def insertArticle():
     o_sn = request.form.get("o_sn")
     a_title = request.form.get("a_title")
     a_content = request.form.get("a_content")
-    a_cnnc = request.form.get("a_sn")
-    print(a_cnnc)
-    print(a_type)
+    a_cnnc = request.form.get("a_cnnc")
+    if not a_cnnc:
+        a_cnnc = None
     now = getToday(time=True)
     db("INSERT INTO article(U_SN, A_TYPE, O_SN, A_TITLE, A_CONTENT, A_CNNC, REGIST_DTM) VALUES (%s, %s, %s, %s, %s, %s, %s)", (u_sn, a_type, o_sn, a_title, a_content, a_cnnc, now))
     return '<script>alert("입력되었습니다.");window.opener.reload(0); close();</script>'
@@ -555,3 +552,50 @@ def getMainAll():
     count = db("SELECT * FROM main WHERE M_TYPE=1")
 
     return jsonify({"data" : result, "recordsTotal" : len(count)})
+
+@fp.route('/insertDeposit', methods=['POST'])
+def insertDeposit():
+    if "u_sn" in session:
+        u_sn = session["u_sn"]
+    else:
+        return jsonify({"result" : 0})
+    amt = request.form.get('amt')
+    now = getToday(time=True)
+    db("INSERT INTO deposit(U_SN, D_AMT, D_STTUS, REGIST_DTM) VALUES(%s, %s, 0, %s)", (u_sn, amt, now))
+    return jsonify({"result" : 1})
+
+@fp.route('/getDeposit')
+def getDeposit():
+    if "u_sn" in session:
+        u_sn = session["u_sn"]
+    else:
+        return jsonify({"data" : [], "recordsTotal" : 0})
+
+    where = ""
+    params = []
+
+
+    page = int(request.args.get("page"))
+
+    queryType = int(request.args.get("queryType"))
+    start = request.args.get("start")
+    end = request.args.get("end")
+
+    if queryType != -1:
+        where += " AND d.D_STTUS=%s "
+        params.append(queryType)
+    where += " AND d.REGIST_DTM BETWEEN %s AND %s "
+    params += ["{} 00:00:00".format(start), "{} 23:59:59".format(end)]
+
+    result = db("SELECT d.*, c.CODE_LABEL as LABEL FROM deposit d LEFT JOIN code c ON d.D_STTUS=c.CODE AND c.CODE_NM='D_STTUS' WHERE U_SN=%s {} ORDER BY REGIST_DTM DESC LIMIT %s OFFSET %s".format(where), (u_sn, *params, 10, page*10))
+    count = db("SELECT d.* FROM deposit d WHERE d.U_SN=%s {}".format(where), (u_sn, *params))
+
+    return jsonify({"data" : result, "recordsTotal" : len(count)})
+
+@fp.route('/getDepositStatus', methods=['POST'])
+def getDepositStatus():
+
+
+
+    result = db("SELECT * FROM code WHERE CODE_NM='D_STTUS' ORDER BY CODE")
+    return jsonify({"data" : result})

@@ -12,7 +12,7 @@ db = DB(host='localhost', user='root', password=PW, db='order')
 @bp.route("/")
 @bp.route("/<menu_name>")
 def render(menu_name=''):
-    menu_list = db("SELECT * FROM menu ORDER BY MENU_ORDR")
+    menu_list = db("SELECT * FROM menu WHERE MENU_USE=1 ORDER BY MENU_ORDR")
     isLogin = loginCheck(session)
     if menu_name == '':
         return render_template('index.html', menu='', menuList=menu_list, isLogin=isLogin)
@@ -31,6 +31,19 @@ def render(menu_name=''):
             return redirect('/login?menu={}'.format(menu_name))
     else:
         abort(404)
+
+@bp.route("/popup/deposit")
+def deposit():
+    menu_list = db("SELECT * FROM menu WHERE MENU_USE=1 ORDER BY MENU_ORDR")
+    isLogin = loginCheck(session)
+    if isLogin:
+        u_sn = session["u_sn"]
+        user = db("SELECT U_ID FROM user WHERE U_SN=%s", (u_sn))
+        return render_template('{}.html'.format('deposit'), menu='ordered', menuList=menu_list, isLogin=isLogin,
+                               u_id=user[0]["u_id"])
+    else:
+        return redirect('/login?menu={}'.format('ordered'))
+
 
 @bp.route("/popup/foreign")
 def foreign():

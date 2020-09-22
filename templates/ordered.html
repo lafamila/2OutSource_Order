@@ -6,40 +6,49 @@
 <div class="container" style="max-width:80%;margin-top:10vh;">
 
     <div class="container-fluid">
-        <h5 class="mb-4"><span class="text-dark">{{u_id}}</span>님, 환영합니다!</h5>
-        <button class="btn btn-primary" id="foreign">수출인증하기</button>
-        <button class="btn btn-primary" data-toggle="collapse" href="#collapseExample" aria-expanded="false" aria-controls="collapseExample">회원정보 수정</button>
-        <div class="collapse" id="collapseExample">
-            <div class="well">
-                <table id="info">
-                    <colgroup>
-                        <col width="120"/>
-                        <col width="100"/>
-                        <col width="80"/>
-                        <col width="100"/>
-                    </colgroup>
-                    <thead>
-                        <tr>
-                            <th>아이디</th>
-                            <th>비밀번호</th>
-                            <th>이름</th>
-                            <th>회사</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+        <div class="row">
+        <div class="col-xl-3">
+            <h5 class="mb-4"><span class="text-dark">{{u_id}}</span>님, 환영합니다!</h5>
+            <button class="btn btn-primary" id="foreign">수출인증하기</button>
+            <button class="btn btn-primary" data-toggle="collapse" href="#collapseExample" aria-expanded="false" aria-controls="collapseExample">회원정보 수정</button>
+            <div class="collapse" id="collapseExample">
+                <div class="well">
+                    <table id="info">
+                        <colgroup>
+                            <col width="120"/>
+                            <col width="100"/>
+                            <col width="80"/>
+                            <col width="100"/>
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>아이디</th>
+                                <th>비밀번호</th>
+                                <th>이름</th>
+                                <th>회사</th>
+                            </tr>
+                        </thead>
+                        <tbody>
 
 
-                    </tbody>
+                        </tbody>
 
-                </table>
+                    </table>
+                </div>
             </div>
         </div>
 
-
-        <div class="row">
-<!--            <div class="col-xl-3 align-self-center" style="text-align: center;"><input type="text" placeholder="브랜드 이름을 입력하세요." style="width: 100%;" id="brand"></div>-->
-<!--            <div class="col-xl-3 align-self-center" style="text-align: center;"><select style="text-align: center;width: 100%;" id="day"><option value="-1" selected="" disabled>요일을 선택하세요.</option><option value="1">월요일</option><option value="2">화요일</option><option value="3">수요일</option><option value="4">목요일</option><option value="5">금요일</option><option value="6">토요일</option><option value="0">일요일</option></select></div>-->
-<!--            <div class="col-xl-2"><button class="btn btn-primary" type="button" id="goRegister">등록</button></div>-->
+        <div class="card shadow col-xl-3">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">예치금 현황</p>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                <div class="col-xl-6 align-self-center" style="text-align: right;"><span id="rank">0</span>원</div>
+                <div class="col-xl-6"><button class="btn btn-primary" type="button" style="float:right;" onclick="location.href='/popup/deposit';">충전 / 사용내역</button></div>
+                </div>
+            </div>
+        </div>
         </div>
         <div class="card shadow">
             <div class="card-header py-3">
@@ -155,6 +164,7 @@
                 html += '<td><span class="change" data-stand="u_sn" data-sn="'+user.u_sn+'" data-col="u_nm" data-table="user">'+user.u_nm+'</span></td>';
                 html += '<td><span class="change" data-stand="u_sn" data-sn="'+user.u_sn+'" data-col="u_cp" data-table="user">'+user.u_cp+'</span></td>';
                 $("#info").find("tbody").html(html);
+                $("#rank").html(user.u_rank.format());
                 console.log(result);
                 console.log($('#dataTable'));
                 if(table){
