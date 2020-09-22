@@ -592,6 +592,35 @@ def getDeposit():
 
     return jsonify({"data" : result, "recordsTotal" : len(count)})
 
+@fp.route('/getSearchDeposit')
+def getSearchDeposit():
+
+    where = ""
+    params = []
+
+    query = request.args.get("query")
+
+    page = int(request.args.get("page"))
+
+    queryType = int(request.args.get("queryType"))
+    start = request.args.get("start")
+    end = request.args.get("end")
+
+    if queryType != -1:
+        where += " AND d.D_STTUS=%s "
+        params.append(queryType)
+
+    if query:
+        where += " AND u.U_ID LIKE %s "
+        params.append('%{}%'.format(query))
+    where += " AND d.REGIST_DTM BETWEEN %s AND %s "
+    params += ["{} 00:00:00".format(start), "{} 23:59:59".format(end)]
+
+    result = db("SELECT d.*, c.CODE_LABEL as LABEL, u.U_ID, u.U_NM FROM deposit d LEFT JOIN code c ON d.D_STTUS=c.CODE AND c.CODE_NM='D_STTUS' LEFT JOIN user u ON d.U_SN=u.U_SN WHERE 1=1 {} ORDER BY REGIST_DTM DESC LIMIT %s OFFSET %s".format(where), (*params, 10, page*10))
+    count = db("SELECT d.* FROM deposit d WHERE 1=1 {}".format(where), tuple(params))
+
+    return jsonify({"data" : result, "recordsTotal" : len(count)})
+
 @fp.route('/getDepositStatus', methods=['POST'])
 def getDepositStatus():
 
@@ -599,3 +628,19 @@ def getDepositStatus():
 
     result = db("SELECT * FROM code WHERE CODE_NM='D_STTUS' ORDER BY CODE")
     return jsonify({"data" : result})
+
+@fp.route('/uploadDeposit', methods=['POST'])
+def uploadDeposit():
+    d_sn = int(request.form.get('sn'))
+    now = getToday(time=True)
+    result = db("SELECT d.U_SN, u.U_RANK, d.d_amt FROM deposit d LEFT JOIN user u ON d.U_SN=u.U_SN WHERE d.D_SN=%s", (d_sn))
+    if len(result) > 0:
+        u_sn = result[0]['u_sn']
+        u_rank = result[0]['u_rank']
+        d_amt = result[0]['d_amt']
+        db("UPDATE user SET U_RANK=%s WHERE U_SN=%s", (u_rank+d_amt, u_sn))
+        db("UPDATE deposit SET D_STTUS=1, FINAL_DTM=%s WHERE D_SN=%s", (now, d_sn))
+
+        return jsonify({"result" : 1})
+    else:
+        return jsonify({"result" : 0})

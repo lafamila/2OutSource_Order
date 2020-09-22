@@ -1,91 +1,85 @@
 {% with menuList = menuList %}
 {% with menu = menu %}
-{% include "common/header.html" %}
+{% include "admin/common/header.html" %}
 {% endwith %}
 {% endwith %}
-<div class="container" style="max-width:80%;">
+    <style>
+        .search-item{
+    border-radius: 15%;
+    padding: 4px;
 
+    background-color: #eee;
+    border: 2px solid #666;
+    text-align: center;
+    cursor: pointer;
+    font-size:6px;
+    color: #333;
+    }
+
+    </style>
     <div class="container-fluid">
-        <ul style="list-style:none;padding-left:0px!important;">
-            <li>현재 사용 가능한 적립금은 <strong><span id="rank">0</span>원</strong> 입니다.</li>
-            <li>
-                <input type="number" placeholder="금액" step="100" id="deposit"/>
-                <input type="button" class="btn btn-primary" value="신청" id="goDeposit"/>
-            </li>
-        </ul>
-        <h3>전용 가상계좌정보</h3>
-        <table class="table my-0">
-            <thead>
-                <tr>
-                    <th>예금주명</th>
-                    <th>은행명</th>
-                    <th>계좌번호</th>
-                    <th>계좌생성일</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>왕도매-넷토피아</td>
-                    <td>국민은행</td>
-                    <td>03589013032167</td>
-                    <td>2016/09/27</td>
-                </tr>
-            </tbody>
-        </table>
+        <h3 class="text-dark mb-4">예치금관리</h3>
+        <div class="row">
+            <table class="table my-0 dataTable no-footer" style="width:100%;margin:20px;">
+                <colgroup>
+                    <col width="50">
+                    <col width="900">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>아이디</th>
+                        <td>
+                            <span>
+                                <input type="text" id="query" class="form-control" value="" style="width:auto;display:inline-block;">
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>기간</th>
+                        <td>
+                            <span>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-primary term" type="button" data-term="0">오늘</button>
+                                    <button class="btn btn-secondary term" type="button" data-term="15">15일</button>
+                                    <button class="btn btn-secondary term" type="button" data-term="30">1개월</button>
+                                    <button class="btn btn-secondary term" type="button" data-term="90">3개월</button>
+                                    <button class="btn btn-secondary term" type="button" data-term="180">6개월</button>
+                                </div>
+                            </span>
+                            <span>
 
+                                <input type="text" id="date-start" class="form-control" value="" style="width:auto;display:inline-block;"> ~ <input type="text" id="date-end" class="form-control" value="" style="width:auto;display:inline-block;">
+
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>상태</th>
+                        <td>
+                            <span>
+                                <select id="query-type">
+                                    <option value="-1" selected>전체</option>
+                                </select>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="text-center">
+                            <button class="btn btn-primary" id="reload" type="button">조회</button>
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+        </div>
         <div class="card shadow">
             <div class="card-header py-3">
-                <p class="text-primary m-0 font-weight-bold">예치금 내역</p>
+                <p class="text-primary m-0 font-weight-bold">예치금 목록</p>
+
             </div>
             <div class="card-body">
-                <div class="row">
-                    <table class="table my-0 dataTable no-footer" style="width:100%;margin:20px;">
-                        <colgroup>
-                            <col width="50">
-                            <col width="900">
-                        </colgroup>
-                        <tbody>
-                            <tr>
-                                <th>기간</th>
-                                <td>
-                                    <span>
-                                        <div class="btn-group" role="group">
-                                            <button class="btn btn-primary term" type="button" data-term="0">오늘</button>
-                                            <button class="btn btn-secondary term" type="button" data-term="15">15일</button>
-                                            <button class="btn btn-secondary term" type="button" data-term="30">1개월</button>
-                                            <button class="btn btn-secondary term" type="button" data-term="90">3개월</button>
-                                            <button class="btn btn-secondary term" type="button" data-term="180">6개월</button>
-                                        </div>
-                                    </span>
-                                    <span>
-
-                                        <input type="text" id="date-start" class="form-control" value="" style="width:auto;display:inline-block;"> ~ <input type="text" id="date-end" class="form-control" value="" style="width:auto;display:inline-block;">
-
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>상태</th>
-                                <td>
-                                    <span>
-                                        <select id="query-type">
-                                            <option value="-1" selected>전체</option>
-                                        </select>
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" class="text-center">
-                                    <button class="btn btn-primary" id="reload" type="button">조회</button>
-                                </td>
-
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-                </div>
-
                 <div class="table-responsive table mt-2" id="dataTable_div" role="grid" aria-describedby="dataTable_info">
                     <style>
                         .table td, .table th {
@@ -97,10 +91,13 @@
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>ID</th>
+                                <th>이름</th>
                                 <th>신청/적립/사용금액</th>
                                 <th>신청일</th>
                                 <th>상태</th>
                                 <th>처리날짜</th>
+                                <th>처리</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -121,7 +118,7 @@
             </div>
         </div>
     </div>
-</div>
+
     <script>
     setDatepicker = function(id, end='0d'){
         $(id).datepicker({
@@ -208,6 +205,7 @@
         }
 
     });
+
     $.ajax({
         url : '/ajax/getDepositStatus',
         method : 'post'
@@ -223,21 +221,22 @@
     $("#reload").on("click", function(){
         reload(0);
     });
-
     </script>
-
     <script>
         var table;
         reload = function(currentPage){
+            var query = $("#query").val();
             var queryType = $("#query-type").val();
             var startDate = $("#date-start").val();
             var endDate = $("#date-end").val();
 
+            var params = {"page" : currentPage, "queryType" : queryType, "query" : query, "start" : startDate, "end" : endDate};
             $.ajax({
-                url : '/ajax/getDeposit',
+                url : '/ajax/getSearchDeposit',
                 method : 'get',
-                data : {"page" : currentPage, "queryType" : queryType, "start" : startDate, "end" : endDate}
+                data : params
             }).done(function(result){
+                console.log(result);
                 if(table){
                     table.destroy();
                 }
@@ -253,6 +252,20 @@
                             render: function ( data, type, row, meta ) {
 
                                 return meta.settings._iDisplayStart + meta.row + 1;
+                            }
+                        },
+                        {   data: 'u_id',
+                            className: 'text-center',
+                            render: function ( data, type, row, meta ) {
+
+                                return data;
+                            }
+                        },
+                        {   data: 'u_nm',
+                            className: 'text-center',
+                            render: function ( data, type, row, meta ) {
+
+                                return data;
                             }
                         },
                         {   data: 'd_amt',
@@ -283,6 +296,17 @@
                                     return data.substring(0, 10);
                                 }
                             }
+                        },
+                        {   data: 'd_sttus',
+                            className: 'text-center',
+                            render: function ( data, type, row ) {
+                                if(parseInt(data) == 0){
+                                    return '<button class="btn btn-primary deposit-submit" type="button" data-sn="'+row.d_sn+'">처리</button>';
+                                }
+                                else{
+                                    return '';
+                                }
+                            }
                         }
                     ]
                 } );
@@ -306,28 +330,26 @@
             });
 
         }
-
-        $("#goDeposit").on("click", function(){
-            var amt = $("#deposit").val();
-            if(amt == null || amt == ''){
-                alert("금액을 입력해주세요.");
-                $("#deposit").focus();
-                return;
-            }
-            var params = {"amt" : amt};
+        $(document).on("click", ".deposit-submit", function(){
+            var sn = $(this).data('sn');
+            var params = {"sn" : sn};
+            console.log(params);
             $.ajax({
-                url : '/ajax/insertDeposit',
+                url : '/ajax/uploadDeposit',
                 method : 'post',
                 data : params
             }).done(function(data){
                 if(data.result == 1){
+                    alert("성공적으로 처리되었습니다.");
                     reload(0);
                 }
                 else{
-                    alert("에러가 발생했습니다. 다시 시도해주세요.");
+                    alert("문제가 발생되었습니다.");
+                    reload(0);
                 }
             });
         });
-
     </script>
-{% include "common/footer.html" %}
+
+
+{% include "admin/common/footer.html" %}
