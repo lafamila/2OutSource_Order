@@ -500,9 +500,9 @@ def getAlerts():
     orderedCount = len(db(query))
 
     where = ""
-    query = ""
-    money = []
-    moneyCount = 0
+    query = "SELECT d.D_AMT, u.U_NM, u.U_ID, u.U_CP FROM deposit d LEFT JOIN user u ON d.U_SN=u.U_SN WHERE d.D_STTUS=0 ORDER BY d.REGIST_DTM DESC"
+    money = db(query+" LIMIT 3 OFFSET 0")
+    moneyCount = len(db(query))
 
     where = ""
     where += " AND a.A_TYPE > 0 AND c.A_SN IS NULL "

@@ -200,11 +200,11 @@
 
                 html += '<a class="d-flex align-items-center dropdown-item" href="#">';
                 html += '    <div class="dropdown-list-image mr-3">';
-                html += '        <div class="bg-success status-indicator"></div>';
+                html += '        <span class="small text-gray-500">'+pValue.u_id+'</div>';
                 html += '    </div>';
                 html += '    <div class="font-weight-bold">';
-                html += '        <div class="text-truncate"><span>3000원 충전</span></div>';
-                html += '        <p class="small text-gray-500 mb-0"></p>';
+                html += '        <div class="text-truncate"><span>'+pValue.d_amt+'원 충전</span></div>';
+                html += '        <p class="small text-gray-500 mb-0">'+pValue.u_nm+'</p>';
                 html += '    </div>';
                 html += '</a>';
             });
