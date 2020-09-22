@@ -142,7 +142,7 @@
                                 <div id="money-list">
 
                                 </div>
-                                <a class="text-center dropdown-item small text-gray-500" href="#">모든 신청 내역보기</a>
+                                <a class="text-center dropdown-item small text-gray-500" href="/admin/deposit">모든 신청 내역보기</a>
                             </div>
             </div>
             <div class="shadow dropdown-list dropdown-menu dropdown-menu-right" aria-labelledby="alertsDropdown"></div>
@@ -198,7 +198,7 @@
             var html = '';
             $.each(result.money, function(pIndex, pValue){
 
-                html += '<a class="d-flex align-items-center dropdown-item" href="#">';
+                html += '<a class="d-flex align-items-center dropdown-item" href="/admin/deposit">';
                 html += '    <div class="dropdown-list-image mr-3">';
                 html += '        <span class="small text-gray-500">'+pValue.u_id+'</div>';
                 html += '    </div>';
